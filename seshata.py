@@ -82,6 +82,61 @@ class seshata:
         except sqlite3.Error as error:
             print("Failed to insert blob data into sqlite table", error)
 
+    def edit(title):
+        import os
+        import subprocess
+        import tempfile
+
+        con = sqlite3.connect(seshata.journal_con)
+        cursor = con.cursor()
+        post_to_edit = cursor.execute("SELECT text FROM posts WHERE posts.title='" + title + "'")
+        for x in post_to_edit:
+            content = (x[0])
+        fdes = -1
+        path = None
+        fp = None
+        try:
+            fdes, path = tempfile.mkstemp(suffix='.txt', text=True)
+            fp = os.fdopen(fdes, 'w+')
+            fdes = -1
+            fp.write(content)
+            fp.close()
+            fp = None
+
+            editor = (os.environ.get('VISUAL') or
+                      os.environ.get('EDITOR') or
+                      'nano')
+            subprocess.check_call([editor, path])
+
+            fp = open(path, 'r')
+            seshata.post_contents = fp.read().rstrip()
+            cursor.execute('''UPDATE posts SET text = ? WHERE title = ?''', (seshata.post_contents, title))
+            con.commit()
+            print('Updated post!')
+        finally:
+            if fp is not None:
+                fp.close()
+            elif fdes >= 0:
+                os.close(fdes)
+            if path is not None:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
+
+    def delete(title):
+        """ This function deletes a post given its title. Usage: seshata.delete(your_post_title)"""
+        con = sqlite3.connect(seshata.journal_con)
+        cursor = con.cursor()
+        cursor.execute("DELETE FROM posts WHERE title = '" + title + "'")
+        print("This will permanently delete " + title + " from the database. Are you sure?")
+        user_response = input("y/n ")
+        if user_response == "y":
+            con.commit()
+            print('Post deleted.')
+        else:
+            print("Post not deleted.")
+
 
     def view_all():
         """ This function allows you to view all of the posts in the database you're connected to.
@@ -153,60 +208,6 @@ class seshata:
 
         print(output)
 
-    def edit(title):
-        import os
-        import subprocess
-        import tempfile
-
-        con = sqlite3.connect(seshata.journal_con)
-        cursor = con.cursor()
-        post_to_edit = cursor.execute("SELECT text FROM posts WHERE posts.title='" + title + "'")
-        for x in post_to_edit:
-            content = (x[0])
-        fdes = -1
-        path = None
-        fp = None
-        try:
-            fdes, path = tempfile.mkstemp(suffix='.txt', text=True)
-            fp = os.fdopen(fdes, 'w+')
-            fdes = -1
-            fp.write(content)
-            fp.close()
-            fp = None
-
-            editor = (os.environ.get('VISUAL') or
-                      os.environ.get('EDITOR') or
-                      'nano')
-            subprocess.check_call([editor, path])
-
-            fp = open(path, 'r')
-            seshata.post_contents = fp.read().rstrip()
-            cursor.execute('''UPDATE posts SET text = ? WHERE title = ?''', (seshata.post_contents, title))
-            con.commit()
-            print('Updated post!')
-        finally:
-            if fp is not None:
-                fp.close()
-            elif fdes >= 0:
-                os.close(fdes)
-            if path is not None:
-                try:
-                    os.unlink(path)
-                except OSError:
-                    pass
-
-    def delete(title):
-        """ This function deletes a post given its title. Usage: seshata.delete(your_post_title)"""
-        con = sqlite3.connect(seshata.journal_con)
-        cursor = con.cursor()
-        cursor.execute("DELETE FROM posts WHERE title = '" + title + "'")
-        print("This will permanently delete " + title + " from the database. Are you sure?")
-        user_response = input("y/n ")
-        if user_response == "y":
-            con.commit()
-            print('Post deleted.')
-        else:
-            print("Post not deleted.")
 
     def append(img_name, filename):
         """ This function inserts a new image into the Images table of the database.
