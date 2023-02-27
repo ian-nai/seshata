@@ -7,6 +7,12 @@ A simple, streamlined, console-based journal/database program written in Python.
 
 ## Usage
 
+### Requirements
+```
+climage==0.1.3
+pip install climage
+```
+
 ###To write your first post:
 
 ```
