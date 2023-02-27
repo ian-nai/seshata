@@ -7,7 +7,38 @@ A simple, streamlined, console-based journal/database program written in Python.
 
 ## Usage
 
-To write a post:
+###To write your first post:
+
+```
+import seshata
+
+seshata.create('my_journal')
+
+seshata.write() # An editor will open and allow you to type your post text.
+
+seshata.post('my first post')
+
+```
+
+### To edit a post in an existing journal:
+
+```
+seshata.open('my_journal') 
+
+seshata.edit('my first post')
+
+```
+### To append an image to a post and then view it in the console:
+
+```
+seshata.open('my_journal') 
+
+seshata.attach('my image', 'img_1.jpeg', 1)
+
+seshata.image('my image')
+
+```
+###Full list of callable functions:
 
 create(new_name)
 This function creates a new database. Usage: seshata.create(your_db_name)
@@ -45,5 +76,5 @@ image(img_title)
 This function displays a specified image in your terminal. Usage: seshata.image(your_image_title)
 
 open(name)
-This function opens a connection to an existing database. Call this before writing to or updatin:
+This function opens a connection to an existing database. Call this before writing/updating a post or appending/attaching an image.
 
