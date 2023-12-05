@@ -13,7 +13,7 @@ climage==0.1.3
 pip install climage
 ```
 
-###To write your first post:
+### To write your first post:
 
 ```
 import seshata
